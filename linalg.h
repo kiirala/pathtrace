@@ -2,6 +2,7 @@
 #define PATHTRACE_LINALG_H
 
 #include <cmath>
+#include <cstdlib>
 
 struct Vector3 {
   double x, y, z;
@@ -41,6 +42,13 @@ struct Vector3 {
     return res;
   }
 
+  Vector3 operator-= (Vector3 const &other) {
+    x -= other.x;
+    y -= other.y;
+    z -= other.z;
+    return *this;
+  }
+
   const Vector3 operator+ (Vector3 const &other) const {
     Vector3 res;
     res.x = x + other.x;
@@ -75,6 +83,11 @@ struct Vector3 {
     return *this;
   }
 
+  const Vector3 operator/ (double const f) const {
+    Vector3 res(x / f, y / f, z / f);
+    return res;
+  }
+
   Vector3 operator/= (double const f) {
     this->x /= f;
     this->y /= f;
@@ -106,6 +119,35 @@ struct Vector3 {
     Vector3 res = *this * factor;
     return res;
   }
+
+  const Vector3 generate_normal() const {
+    Vector3 rand1(1.0, 0.0, 0.0);
+    Vector3 rand2(0.0, 1.0, 0.0);
+    Vector3 normal;
+    if (fabs(this->dot(rand1)) < fabs(this->dot(rand2))) {
+      normal = this->cross(rand1);
+    }
+    else {
+      normal = this->cross(rand2);
+    }
+    return normal;
+  }
+
+  const Vector3 static gaussian(double mean, double var1, double var2) {
+    double u1 = (double)random() / RAND_MAX;
+    double u2 = (double)random() / RAND_MAX;
+    double nat1 = sqrt(-2 * log(u1)) * cos(2 * M_PI * u2);
+    double nat2 = sqrt(-2 * log(u1)) * sin(2 * M_PI * u2);
+    double rot1 = var1 * nat1 + mean;
+    double rot2 = var2 * nat2 + mean;
+    Vector3 ret(sin(rot1), cos(rot1) * sin(rot2), cos(rot1) * cos(rot2));
+    return ret;
+  }
+
+  const Vector3 static gaussian(double mean, double variance) {
+    return gaussian(mean, variance, variance);
+  }
+
 };
 
 struct Colour : public Vector3 {

@@ -1,6 +1,17 @@
-CXXFLAGS=`pkg-config --cflags gtkmm-2.4` -g -Wall -Wextra
-LDFLAGS=`pkg-config --libs gtkmm-2.4` -g -Wall -Wextra
+GENERAL=-Os -g -march=amdfam10 -Wall -Wextra
+CXXFLAGS=`pkg-config --cflags gtkmm-2.4` $(GENERAL) -MMD -MP
+LDFLAGS=`pkg-config --libs gtkmm-2.4` $(GENERAL)
 
-all: gui
+OBJECTS=gui.o tracer.o material.o shapes.o
+PROGRAM=gui
 
-gui: gui.o tracer.o
+all: $(PROGRAM)
+
+gui: $(OBJECTS)
+
+-include $(OBJECTS:.o=.d)
+
+clean:
+	rm -f $(PROGRAM) $(OBJECTS) $(OBJECTS:.o=.d) *~
+
+

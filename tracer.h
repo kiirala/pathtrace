@@ -5,20 +5,28 @@
 #include <assert.h>
 
 #include "linalg.h"
+#include "material.h"
+#include "shapes.h"
 
 class Image {
 private:
   Colour *data;
+  double *variance_t;
+  int paints_started;
 
 public:
   unsigned int width, height;
 
   void blit_to(Glib::RefPtr<Gdk::Pixbuf> &pb, double exposure);
+  void blit_variance(Glib::RefPtr<Gdk::Pixbuf> &pb);
 
   Image(unsigned int width, unsigned int height)
-    : width(width), height(height)
+    : paints_started(0), width(width), height(height)
   {
     data = new Colour[width * height];
+    variance_t = new double[width * height];
+    for (unsigned int i = 0 ; i < width * height ; ++i)
+      variance_t[i] = 1.0;
   }
 
   const Colour& operator()(unsigned int x, unsigned int y) const {
@@ -30,65 +38,22 @@ public:
     assert(x < width && y < height);
     return data[y * width + x];
   }
-};
 
-class Shape {
-public:
-  virtual double intersect(Ray const &ray) const = 0;
-  virtual Vector3 get_normal(Vector3 const &pos) const = 0;
-  virtual Shape* clone() const = 0;
-};
+  void add(unsigned int x, unsigned int y, Colour const &col) {
+    this->operator()(x, y) += col;
+    Colour diff = this->operator()(x, y);
+    diff /= paints_started;
+    diff -= col;
+    variance_t[y * width + x] += fmax(fabs(diff.r()), fmax(fabs(diff.g()), fabs(diff.b())));
+  }
 
-class Sphere : public Shape {
-private:
-  Vector3 center;
-  double radius;
-public:
-  Sphere(Vector3 const &center, double const radius)
-    : center(center), radius(radius)
-  { }
-  virtual double intersect(Ray const &ray) const;
-  virtual Vector3 get_normal(Vector3 const &pos) const;
-  virtual Sphere* clone() const;
-};
+  double variance(unsigned int x, unsigned int y) const {
+    return variance_t[y * width + x] / paints_started;
+  }
 
-class Material {
-public:
-  Colour colour;
-  Colour emission;
-
-  Material(Colour colour)
-    : colour(colour), emission()
-  { }
-
-  Material(Colour colour, Colour emission)
-    : colour(colour), emission(emission)
-  { }
-
-  virtual Vector3 bounce(Ray const &ray, Vector3 const &normal) const;
-  virtual Material* clone() const;
-};
-
-class Glass : public Material {
-private:
-  double ior;
-  double reflection;
-
-public:
-  Glass(Colour col, double ior, double reflection)
-    : Material(col), ior(ior), reflection(reflection)
-  { }
-  virtual Vector3 bounce(Ray const &ray, Vector3 const &normal) const;
-  virtual Material* clone() const;
-};
-
-class Chrome : public Material {
-public:
-  Chrome(Colour col)
-    : Material(col)
-  { }
-  virtual Vector3 bounce(Ray const &ray, Vector3 const &normal) const;
-  virtual Material* clone() const;
+  void paint_start() {
+    paints_started++;
+  }
 };
 
 class Object {
@@ -114,16 +79,22 @@ class Camera {
 private:
   Vector3 origin, topleft, topright, bottomleft;
   Vector3 xd, yd;
+  Vector3 dof_origin;
+  double plane_x, plane_y;
+  double focus, aperture;
 
 public:
   Camera(Vector3 const &origin, Vector3 const &topleft,
-	 Vector3 const &topright, Vector3 const &bottomleft)
+	 Vector3 const &topright, Vector3 const &bottomleft,
+	 double focus, double aperture)
     : origin(origin), topleft(topleft),
       topright(topright), bottomleft(bottomleft),
-      xd(topright - topleft), yd(bottomleft - topleft)
+      xd(topright - topleft), yd(bottomleft - topleft),
+      focus(focus), aperture(aperture)
   { }
 
   Ray get_ray(double x, double y);
+  void paint_start();
 };
 
 class Tracer {
