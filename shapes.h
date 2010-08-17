@@ -3,10 +3,28 @@
 
 #include "linalg.h"
 
+class Hit {
+public:
+  Ray ray;
+  double distance;
+  Vector3 normal;
+
+  Hit()
+    : ray(Vector3(), Vector3()), distance(-1), normal()
+  { }
+
+  Hit(Ray const &ray, double const distance, Vector3 const &normal)
+    : ray(ray), distance(distance), normal(normal)
+  { }
+
+  bool is_hit() {
+    return distance > 0;
+  }
+};
+
 class Shape {
 public:
-  virtual double intersect(Ray const &ray) const = 0;
-  virtual Vector3 get_normal(Vector3 const &pos) const = 0;
+  virtual Hit intersect(Ray const &ray) const = 0;
   virtual Shape* clone() const = 0;
 };
 
@@ -18,8 +36,7 @@ public:
   Sphere(Vector3 const &center, double const radius)
     : center(center), radius(radius)
   { }
-  virtual double intersect(Ray const &ray) const;
-  virtual Vector3 get_normal(Vector3 const &pos) const;
+  virtual Hit intersect(Ray const &ray) const;
   virtual Sphere* clone() const;
 };
 
@@ -31,9 +48,19 @@ public:
   Plane(Vector3 const &point, Vector3 const &normal)
     : point(point), normal(normal)
   { }
-  virtual double intersect(Ray const &ray) const;
-  virtual Vector3 get_normal(Vector3 const &pos) const;
+  virtual Hit intersect(Ray const &ray) const;
   virtual Plane* clone() const;
+};
+
+class Difference : public Shape {
+private:
+  Shape *base, *cut;
+public:
+  Difference(Shape const &base, Shape const &cut)
+    : base(base.clone()), cut(cut.clone())
+  { }
+  virtual Hit intersect(Ray const &ray) const;
+  virtual Difference* clone() const;
 };
 
 /*

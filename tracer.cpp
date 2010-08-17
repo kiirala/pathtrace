@@ -74,12 +74,12 @@ Colour Tracer::trace(Ray &ray, int bounces) {
     return ret;
   }
 
-  double hitdist = -1;
+  Hit hitdist;
   Object const *hitobj = 0;
   for (std::vector<Object>::const_iterator i = scene.objects.begin() ;
        i != scene.objects.end() ; ++i) {
-    double dist = (*i).shape->intersect(ray);
-    if (dist > 1e-4 && (!hitobj || dist < hitdist)) {
+    Hit dist = (*i).shape->intersect(ray);
+    if (dist.is_hit() && (!hitobj || dist.distance < hitdist.distance)) {
       hitdist = dist;
       hitobj = &(*i);
     }
@@ -90,8 +90,8 @@ Colour Tracer::trace(Ray &ray, int bounces) {
     return ret;
   }
 
-  Vector3 point = ray.origin + ray.direction * hitdist;
-  Vector3 normal = hitobj->shape->get_normal(point);
+  Vector3 point = ray.origin + ray.direction * hitdist.distance;
+  Vector3 normal = hitdist.normal;
   Vector3 direction = hitobj->material->bounce(ray, normal);
   Ray newray(point, direction);
   Colour ret = trace(newray, bounces + 1);

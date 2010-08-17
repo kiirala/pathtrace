@@ -3,40 +3,66 @@
 #include "shapes.h"
 #include "linalg.h"
 
-double Sphere::intersect(Ray const &ray) const {
+Hit Sphere::intersect(Ray const &ray) const {
   Vector3 dist = ray.origin - center;
-  double b = dist.dot(ray.direction);
+  double a = ray.direction.dot(ray.direction);
+  double b = 2 * dist.dot(ray.direction);
   double c = dist.dot(dist) - radius * radius;
-  double d = b * b - c;
-  if (d > 0.0) {
-    return -b -sqrt(d);
+  double discr = b * b - 4 * a * c;
+  if (discr > 0.0) {
+    double ret;
+    if ((-b - sqrt(discr)) / (2 * a) < 1e-4)
+      ret = (-b + sqrt(discr)) / (2 * a);
+    else
+      ret = (-b - sqrt(discr)) / (2 * a);
+    Vector3 n = ray.origin + ray.direction * ret - center;
+    n.normalize();
+    return Hit(ray, ret, n);
   }
-  return -1;
-}
-
-Vector3 Sphere::get_normal(Vector3 const &pos) const {
-  Vector3 n = pos - center;
-  n.normalize();
-  return n;
+  return Hit();
 }
 
 Sphere* Sphere::clone() const {
   return new Sphere(center, radius);
 }
 
-double Plane::intersect(Ray const &ray) const {
+Hit Plane::intersect(Ray const &ray) const {
   double plane_angle = ray.direction.dot(normal);
   if (fabs(plane_angle) < 1e-4)
-    return -1;
+    return Hit();
   Vector3 start_diff = point - ray.origin;
   double dist = normal.dot(start_diff) / plane_angle;
-  return dist;
-}
-
-Vector3 Plane::get_normal(Vector3 const &/*pos*/) const {
-  return normal;
+  return Hit(ray, dist, normal);
 }
 
 Plane* Plane::clone() const {
   return new Plane(point, normal);
+}
+
+Hit Difference::intersect(Ray const &ray) const {
+  Hit base_d = base->intersect(ray);
+  Hit cut_d = cut->intersect(ray);
+  if (base_d.is_hit() && !cut_d.is_hit()) {
+    return base_d;
+  }
+  else if (base_d.is_hit()) {
+    if (base_d.distance > cut_d.distance) {
+      Ray inray(Vector3(ray.origin + ray.direction * base_d.distance),
+		ray.direction);
+      Hit base_d2 = base->intersect(inray);
+      Hit cut_d2 = cut->intersect(inray);
+      if (base_d2.distance > cut_d2.distance)
+	return Hit(ray, base_d.distance + cut_d2.distance, -cut_d2.normal);
+      else
+	return Hit();
+    }
+    else {
+      return base_d;
+    }
+  }
+  else return Hit();
+}
+
+Difference* Difference::clone() const {
+  return new Difference(*base, *cut);
 }

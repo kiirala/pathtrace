@@ -174,7 +174,8 @@ int main(int argc, char **argv) {
   Scene s;
   s.add(Object(Sphere(Vector3(1.0, 1.6, 0.0), 0.5),
 	       Glass(Colour(1.00, 1.00, 1.00), 1.5, 0.1)));
-  s.add(Object(Sphere(Vector3(-1.1, 2.8, 0.0), 0.5),
+  s.add(Object(Difference(Sphere(Vector3(-1.1, 2.8, 0.0), 0.5),
+			  Sphere(Vector3(-0.8, 2.6, 0.1), 0.5)),
 	       Material(Colour(0.8, 0.8, 0.8), 0.1)));
   for (int i = 0 ; i < 3 ; ++i) {
     s.add(Object(Sphere(Vector3(-1.0 + i * 0.7, 1.4 + i * 0.5, -0.25), 0.25),
@@ -199,7 +200,7 @@ int main(int argc, char **argv) {
 	     Vector3(-1.3, 1.0, 1.0),
 	     Vector3(1.3, 1.0, 1.0),
 	     Vector3(-1.3, 1.0, -1.0),
-	     4.0, 0.03);
+	     4.0, 0.015);
   
   Tracer tr(s, cam);
 
