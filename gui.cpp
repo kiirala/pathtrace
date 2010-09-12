@@ -168,8 +168,8 @@ void stop_work() {
 
 int main(int argc, char **argv) {
   Gtk::Main kit(argc, argv);
-  int width = 320;
-  int height = 240;
+  int width = 640;
+  int height = 480;
 
   Scene s;
   s.add(Object(Sphere(Vector3(1.0, 1.6, 0.0), 0.5),
