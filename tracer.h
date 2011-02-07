@@ -54,6 +54,10 @@ public:
   void paint_start() {
     paints_started++;
   }
+
+  int get_paints_started() {
+    return paints_started;
+  }
 };
 
 class Object {
@@ -107,7 +111,7 @@ public:
     : scene(scene), camera(camera)
   { }
 
-  Colour trace(Ray &ray, int bounces);
+  Colour trace(Ray &ray, int bounces, int maxbounces);
   void traceImage(Image &img);
 };
 

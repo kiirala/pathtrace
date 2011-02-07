@@ -67,8 +67,8 @@ void Camera::paint_start() {
   plane_y = dof_y * ((focus - plane_dist) / focus);
 }
 
-Colour Tracer::trace(Ray &ray, int bounces) {
-  const static int maxbounces = 6;
+Colour Tracer::trace(Ray &ray, int bounces, int maxbounces) {
+  //const static int maxbounces = 6;
   if (bounces >= maxbounces) {
     Colour ret(0, 0, 0);
     return ret;
@@ -94,7 +94,9 @@ Colour Tracer::trace(Ray &ray, int bounces) {
   Vector3 normal = hitdist.normal;
   Vector3 direction = hitobj->material->bounce(ray, normal);
   Ray newray(point, direction);
-  Colour ret = trace(newray, bounces + 1);
+  Colour ret;
+  if (!hitobj->material->colour.is_zero())
+    ret = trace(newray, bounces + 1, maxbounces);
   ret *= hitobj->material->colour;
   ret += hitobj->material->emission / (M_PI * M_PI);
   return ret;
@@ -106,7 +108,6 @@ void Tracer::traceImage(Image &img) {
 
   img.paint_start();
   camera.paint_start();
-
   for (unsigned int y = 0 ; y < img.height ; ++y) {
     for (unsigned int x = 0 ; x < img.width ; ++x) {
       /*
@@ -122,7 +123,7 @@ void Tracer::traceImage(Image &img) {
       */
       Ray ray = camera.get_ray((x + dx) / img.width,
 			       (y + dy) / img.height);
-      Colour col = trace(ray, 0);
+      Colour col = trace(ray, 0, 6);
       img(x, y) += col;
     }
   }

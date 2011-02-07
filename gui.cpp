@@ -44,6 +44,7 @@ private:
   int steps;
   bool running, paused;
   time_t start_time;
+  time_t elapsed_time;
 
   Gtk::HBox hsplit;
   Gtk::Image image_w;
@@ -79,16 +80,22 @@ public:
     image_w.queue_draw();
     steps++;
     static char label[64];
-    snprintf(label, 64, "%d steps\n%ld seconds", steps, time(0) - start_time);
+    time_t total_time = elapsed_time;
+    if (!paused) total_time += time(0) - start_time;
+    snprintf(label, 64, "%d steps\n%ld seconds", steps, total_time);
     steps_l.set_text(label);
   }
 
   void on_pause() {
     paused = !paused;
-    if (paused)
+    if (paused) {
+      elapsed_time += time(0) - start_time;
       pause.set_label("Resume");
-    else
+    }
+    else {
+      start_time = time(0);
       pause.set_label("Pause");
+    }
   }
 
   void on_change_exposure() {
@@ -98,9 +105,9 @@ public:
   }
 
   ImageWindow(Glib::RefPtr<Gdk::Pixbuf> &pb, Workhandler *wh)
-    : image_pb(pb), workhandler(wh), steps(0), running(true), paused(false),
-      start_time(time(0)),
-      pause("Pause"),
+    : image_pb(pb), workhandler(wh), steps(0), running(true), paused(true),
+      start_time(time(0)), elapsed_time(0),
+      pause(paused ? "Start" : "Pause"),
       step("Step"), redraw("Redraw"), quit("Quit"), steps_l("No steps run\n"),
       exposure_adj(1.0, 0.0, 4.0, 0.01, 0.1, 0.0), exposure(exposure_adj)      
   {

@@ -133,6 +133,10 @@ struct Vector3 {
     return normal;
   }
 
+  bool is_zero() const {
+    return x == 0.0 && y == 0.0 && z == 0.0;
+  }
+
   const Vector3 static gaussian(double mean, double var1, double var2) {
     double u1 = (double)random() / RAND_MAX;
     double u2 = (double)random() / RAND_MAX;
