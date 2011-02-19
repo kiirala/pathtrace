@@ -105,7 +105,7 @@ public:
   }
 
   ImageWindow(Glib::RefPtr<Gdk::Pixbuf> &pb, Workhandler *wh)
-    : image_pb(pb), workhandler(wh), steps(0), running(true), paused(true),
+    : image_pb(pb), workhandler(wh), steps(0), running(true), paused(false),
       start_time(time(0)), elapsed_time(0),
       pause(paused ? "Start" : "Pause"),
       step("Step"), redraw("Redraw"), quit("Quit"), steps_l("No steps run\n"),
