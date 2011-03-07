@@ -10,14 +10,14 @@ Hit Sphere::intersect(Ray const &ray) const {
   double c = dist.dot(dist) - radius * radius;
   double discr = b * b - 4 * a * c;
   if (discr > 0.0) {
-    double ret;
-    if ((-b - sqrt(discr)) / (2 * a) < 1e-4)
-      ret = (-b + sqrt(discr)) / (2 * a);
+    double distance;
+    if ((-b - sqrt(discr)) / (2 * a) < 1e-8)
+      distance = (-b + sqrt(discr)) / (2 * a);
     else
-      ret = (-b - sqrt(discr)) / (2 * a);
-    Vector3 n = ray.origin + ray.direction * ret - center;
+      distance = (-b - sqrt(discr)) / (2 * a);
+    Vector3 n = ray.origin + ray.direction * distance - center;
     n.normalize();
-    return Hit(ray, ret, n);
+    return Hit(ray, distance, n);
   }
   return Hit();
 }

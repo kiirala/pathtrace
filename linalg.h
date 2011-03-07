@@ -140,6 +140,7 @@ struct Vector3 {
   const Vector3 static gaussian(double mean, double var1, double var2) {
     double u1 = (double)random() / RAND_MAX;
     double u2 = (double)random() / RAND_MAX;
+    // Box-Muller transform
     double nat1 = sqrt(-2 * log(u1)) * cos(2 * M_PI * u2);
     double nat2 = sqrt(-2 * log(u1)) * sin(2 * M_PI * u2);
     double rot1 = var1 * nat1 + mean;

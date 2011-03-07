@@ -1,5 +1,7 @@
 #include <cstdio>
 #include <ctime>
+#include <pthread.h>
+#include <errno.h>
 
 #include <gtkmm.h>
 
@@ -10,17 +12,60 @@
 class Workhandler {
 private:
   Image buf;
+  pthread_t *thread;
   Tracer &tracer;
   Glib::RefPtr<Gdk::Pixbuf> disp;
   double exposure;
-
+  int thread_count;
+  bool running;
+  pthread_mutex_t buf_mutex;
+  
 public:
-  Workhandler(Tracer &tr, Glib::RefPtr<Gdk::Pixbuf> &disp)
+  sigc::signal<void> signal_frame;
+
+  Workhandler(Tracer &tr, Glib::RefPtr<Gdk::Pixbuf> &disp, int threads = 1)
     : buf(disp->get_width(), disp->get_height()), tracer(tr), disp(disp),
-      exposure(1.0)
-  { }
+      exposure(1.0), thread_count(threads), running(true)
+  {
+    pthread_mutex_init(&buf_mutex, 0);
+    thread = new pthread_t[thread_count];
+    for (int i = 0 ; i < thread_count ; ++i) {
+      int ret = pthread_create(thread + i, 0, run_renderer,
+			       static_cast<void*>(this));
+      if (ret != 0) {
+	errno = ret;
+	perror("Failed to create thread");
+      }
+    }
+  }
+
+  ~Workhandler() {
+    running = false;
+    for (int i = 0 ; i < thread_count ; ++i) {
+      errno = pthread_join(thread[i], 0);
+      if (errno != 0)
+	perror("Failed to join thread");
+    }
+    delete [] thread;
+  }
 
   void stop() {
+  }
+
+  static void* run_renderer(void *wh_void) {
+    Workhandler *wh = static_cast<Workhandler*>(wh_void);
+    Image buf(wh->disp->get_width(), wh->disp->get_height());
+    Tracer tracer(wh->tracer);
+    while (wh->running) {
+      tracer.traceImage(buf);
+      pthread_mutex_lock(&wh->buf_mutex);
+      wh->buf.add(buf);
+      wh->buf.blit_to(wh->disp, wh->exposure);
+      pthread_mutex_unlock(&wh->buf_mutex);
+      wh->signal_frame.emit();
+    }
+    pthread_exit(0);
+    return 0;
   }
 
   void post_step() {
@@ -77,6 +122,10 @@ public:
 
   void on_step() {
     workhandler->post_step();
+    on_frame();
+  }
+
+  void on_frame() {
     image_w.queue_draw();
     steps++;
     static char label[64];
@@ -151,6 +200,7 @@ public:
     tools.show();
     hsplit.show();
     show();
+    workhandler->signal_frame.connect(sigc::mem_fun(*this, &ImageWindow::on_frame));
   }
 
   virtual ~ImageWindow() {
@@ -158,12 +208,7 @@ public:
 
   void run() {
     while (running) {
-      while( Gtk::Main::events_pending() )
-	Gtk::Main::iteration();
-      if (!paused)
-	on_step();
-      else
-	Gtk::Main::iteration();
+      Gtk::Main::iteration();
     }
   }
 };

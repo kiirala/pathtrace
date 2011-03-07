@@ -7,6 +7,7 @@
 #include "linalg.h"
 #include "material.h"
 #include "shapes.h"
+#include "camera.h"
 
 class Image {
 private:
@@ -41,10 +42,21 @@ public:
 
   void add(unsigned int x, unsigned int y, Colour const &col) {
     this->operator()(x, y) += col;
+    /*
     Colour diff = this->operator()(x, y);
     diff /= paints_started;
     diff -= col;
     variance_t[y * width + x] += fmax(fabs(diff.r()), fmax(fabs(diff.g()), fabs(diff.b())));
+    */
+  }
+
+  void add(Image const &other) {
+    for (unsigned int y = 0 ; y < height ; ++y) {
+      for (unsigned int x = 0 ; x < width ; ++x) {
+	data[y * width + x] += other.data[y * width + x];
+      }
+    }
+    paints_started++;
   }
 
   double variance(unsigned int x, unsigned int y) const {
@@ -79,28 +91,6 @@ public:
   }
 };
 
-class Camera {
-private:
-  Vector3 origin, topleft, topright, bottomleft;
-  Vector3 xd, yd;
-  Vector3 dof_origin;
-  double plane_x, plane_y;
-  double focus, aperture;
-
-public:
-  Camera(Vector3 const &origin, Vector3 const &topleft,
-	 Vector3 const &topright, Vector3 const &bottomleft,
-	 double focus, double aperture)
-    : origin(origin), topleft(topleft),
-      topright(topright), bottomleft(bottomleft),
-      xd(topright - topleft), yd(bottomleft - topleft),
-      focus(focus), aperture(aperture)
-  { }
-
-  Ray get_ray(double x, double y);
-  void paint_start();
-};
-
 class Tracer {
 private:
   Scene &scene;
@@ -109,6 +99,10 @@ private:
 public:
   Tracer(Scene &scene, Camera &camera)
     : scene(scene), camera(camera)
+  { }
+
+  Tracer(Tracer const &other)
+    : scene(other.scene), camera(other.camera)
   { }
 
   Colour trace(Ray &ray, int bounces, int maxbounces);

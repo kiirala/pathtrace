@@ -11,13 +11,12 @@ Vector3 Material::bounce(Ray const &ray, Vector3 const &normal) const {
   Vector3 r_norm1 = refl.generate_normal();
   Vector3 r_norm2 = refl.cross(r_norm1);
 
-  Vector3 dir_refl = Vector3::gaussian(0, roughness);
-  Vector3 dir = r_norm1 * dir_refl.x + r_norm2 * dir_refl.y + refl * dir_refl.z;
-  dir.normalize();
-  if (dir.dot(normal) < 0.0) {
-    dir = r_norm1 * -dir_refl.x + r_norm2 * -dir_refl.y + refl * dir_refl.z;
-    dir.normalize();
-  }
+  Vector3 dir;
+  do {
+    Vector3 dir_refl = Vector3::gaussian(0, roughness);
+    dir = r_norm1 * dir_refl.y + r_norm2 * dir_refl.x + refl * dir_refl.z;
+    //dir.normalize();
+  } while (dir.dot(normal) < 0.0);
   return dir;
   /*
   Vector3 vec;

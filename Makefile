@@ -2,7 +2,7 @@ GENERAL=-Os -g -march=native -Wall -Wextra
 CXXFLAGS=`pkg-config --cflags gtkmm-2.4` $(GENERAL) -MMD -MP
 LDFLAGS=`pkg-config --libs gtkmm-2.4` $(GENERAL)
 
-OBJECTS=gui.o tracer.o material.o shapes.o
+OBJECTS=gui.o tracer.o material.o shapes.o camera.o
 PROGRAM=gui
 
 all: $(PROGRAM)
