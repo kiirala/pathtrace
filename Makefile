@@ -1,17 +1,19 @@
-GENERAL=-Os -g -march=native -Wall -Wextra
+GENERAL=-O0 -g -march=native -Wall -Wextra
 CXXFLAGS=`pkg-config --cflags gtkmm-2.4` $(GENERAL) -MMD -MP
 LDFLAGS=`pkg-config --libs gtkmm-2.4` $(GENERAL)
 
-OBJECTS=gui.o tracer.o material.o shapes.o camera.o
-PROGRAM=gui
+OBJECTS=tracer.o material.o shapes.o camera.o
+PROGRAMS=gui test
 
-all: $(PROGRAM)
+all: $(PROGRAMS)
 
-gui: $(OBJECTS)
+gui: gui.o $(OBJECTS)
 
--include $(OBJECTS:.o=.d)
+test: test.o $(OBJECTS)
+
+-include $(OBJECTS:.o=.d) gui.d test.d
 
 clean:
-	rm -f $(PROGRAM) $(OBJECTS) $(OBJECTS:.o=.d) *~
+	rm -f $(PROGRAMS) $(OBJECTS) $(OBJECTS:.o=.d) *~
 
 

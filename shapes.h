@@ -47,7 +47,9 @@ private:
 public:
   Plane(Vector3 const &point, Vector3 const &normal)
     : point(point), normal(normal)
-  { }
+  {
+    this->normal.normalize();
+  }
   virtual Hit intersect(Ray const &ray) const;
   virtual Plane* clone() const;
 };

@@ -137,22 +137,26 @@ struct Vector3 {
     return x == 0.0 && y == 0.0 && z == 0.0;
   }
 
-  const Vector3 static gaussian(double mean, double var1, double var2) {
+  const Vector3 static gaussian(double mean, double variance) {
     double u1 = (double)random() / RAND_MAX;
     double u2 = (double)random() / RAND_MAX;
     // Box-Muller transform
     double nat1 = sqrt(-2 * log(u1)) * cos(2 * M_PI * u2);
-    double nat2 = sqrt(-2 * log(u1)) * sin(2 * M_PI * u2);
-    double rot1 = var1 * nat1 + mean;
-    double rot2 = var2 * nat2 + mean;
-    Vector3 ret(sin(rot1), cos(rot1) * sin(rot2), cos(rot1) * cos(rot2));
+    //double nat2 = sqrt(-2 * log(u1)) * sin(2 * M_PI * u2);
+    double rot1 = variance * nat1 + mean;
+    double rot2 = (double)random() / RAND_MAX * 2 * M_PI;/*var1 * nat1 + mean;*/
+    Vector3 ret(sin(rot1) * cos(rot2), sin(rot1) * sin(rot2), cos(rot1));
     return ret;
   }
-
+  /*
+    (sin(rot1), 0, cos(rot1))
+    (sin(rot1) * cos(rot2), sin(rot1) * sin(rot2), cos(rot1))
+   */
+  /*
   const Vector3 static gaussian(double mean, double variance) {
     return gaussian(mean, variance, variance);
   }
-
+  */
 };
 
 struct Colour : public Vector3 {

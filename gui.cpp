@@ -23,7 +23,7 @@ private:
 public:
   sigc::signal<void> signal_frame;
 
-  Workhandler(Tracer &tr, Glib::RefPtr<Gdk::Pixbuf> &disp, int threads = 1)
+  Workhandler(Tracer &tr, Glib::RefPtr<Gdk::Pixbuf> &disp, int threads = 2)
     : buf(disp->get_width(), disp->get_height()), tracer(tr), disp(disp),
       exposure(1.0), thread_count(threads), running(true)
   {
@@ -40,16 +40,18 @@ public:
   }
 
   ~Workhandler() {
+    stop();
+    delete [] thread;
+  }
+
+  void stop() {
     running = false;
     for (int i = 0 ; i < thread_count ; ++i) {
       errno = pthread_join(thread[i], 0);
       if (errno != 0)
 	perror("Failed to join thread");
     }
-    delete [] thread;
-  }
-
-  void stop() {
+    thread_count = 0;
   }
 
   static void* run_renderer(void *wh_void) {
@@ -113,6 +115,7 @@ public:
 
   bool on_quit() {
     running = false;
+    workhandler->stop();
     return false;
   }
 
@@ -228,7 +231,7 @@ int main(int argc, char **argv) {
 	       Glass(Colour(1.00, 1.00, 1.00), 1.5, 0.1)));
   s.add(Object(Difference(Sphere(Vector3(-1.1, 2.8, 0.0), 0.5),
 			  Sphere(Vector3(-0.8, 2.6, 0.1), 0.5)),
-	       Material(Colour(0.8, 0.8, 0.8), 0.1)));
+	       Material(Colour(0.8, 0.8, 0.8), 0.01)));
   for (int i = 0 ; i < 3 ; ++i) {
     s.add(Object(Sphere(Vector3(-1.0 + i * 0.7, 1.4 + i * 0.5, -0.25), 0.25),
 		 Material(Colour(0.96, 0.65, 0.55), pow(0.2, 2/*3 - i*/))));
