@@ -71,14 +71,15 @@ Colour Tracer::trace(Ray &ray, int bounces, int maxbounces) {
     return ret;
   }
 
-  Vector3 point = ray.origin + ray.direction * hitdist.distance;
-  Vector3 normal = hitdist.normal;
-  Vector3 direction = hitobj->material->bounce(ray, normal);
-  Ray newray(point, direction);
   Colour ret;
-  if (!hitobj->material->colour.is_zero())
+  if (!hitobj->material->colour.is_zero()) {
+    Vector3 point = ray.origin + ray.direction * hitdist.distance;
+    Vector3 normal = hitdist.normal;
+    Vector3 direction = hitobj->material->bounce(ray, normal);
+    Ray newray(point, direction);
     ret = trace(newray, bounces + 1, maxbounces);
-  ret *= hitobj->material->colour;
+    ret *= hitobj->material->colour;
+  }
   ret += hitobj->material->emission / (M_PI * M_PI);
   return ret;
 }

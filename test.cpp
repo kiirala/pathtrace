@@ -59,7 +59,7 @@ void test_gaussian() {
   Histogram len = Histogram(0, 1, 25);
 
   for (int i = 0 ; i < 256 * 256 ; ++i) {
-    Vector3 v = Vector3::gaussian(0, 1.0);
+    Vector3 v = Vector3::gaussian(0, 0.5);
     x.add(v.x, 1);
     y.add(v.y, 1);
     z.add(v.z, 1);

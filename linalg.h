@@ -138,6 +138,8 @@ struct Vector3 {
   }
 
   const Vector3 static gaussian(double mean, double variance) {
+    /* 1: (sin(rot1), 0, cos(rot1))
+     * 2: (sin(rot1) * cos(rot2), sin(rot1) * sin(rot2), cos(rot1)) */
     double u1 = (double)random() / RAND_MAX;
     double u2 = (double)random() / RAND_MAX;
     // Box-Muller transform
@@ -148,15 +150,6 @@ struct Vector3 {
     Vector3 ret(sin(rot1) * cos(rot2), sin(rot1) * sin(rot2), cos(rot1));
     return ret;
   }
-  /*
-    (sin(rot1), 0, cos(rot1))
-    (sin(rot1) * cos(rot2), sin(rot1) * sin(rot2), cos(rot1))
-   */
-  /*
-  const Vector3 static gaussian(double mean, double variance) {
-    return gaussian(mean, variance, variance);
-  }
-  */
 };
 
 struct Colour : public Vector3 {

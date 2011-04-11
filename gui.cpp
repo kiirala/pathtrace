@@ -240,7 +240,7 @@ int main(int argc, char **argv) {
   s.add(Object(Plane(Vector3(0.0, 3.5, -0.5), Vector3(0, 0, 1)),
 	       Material(Colour(0.9, 0.9, 0.9))));
   s.add(Object(Plane(Vector3(0.0, 4.5, 0.0), Vector3(0, -1, 0)),
-	       Material(Colour(0.9, 0.9, 0.9))));
+	       Material(Colour(0.9, 0.9, 0.9), 0.01)));
   s.add(Object(Plane(Vector3(-1.9, 3.5, 0.0), Vector3(1, 0, 0)),
 	       Material(Colour(0.9, 0.5, 0.5))));
   s.add(Object(Plane(Vector3(1.9, 3.5, 0.0), Vector3(-1, 0, 0)),

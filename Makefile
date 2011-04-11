@@ -1,4 +1,4 @@
-GENERAL=-O0 -g -march=native -Wall -Wextra
+GENERAL=-Os -g -march=native -Wall -Wextra
 CXXFLAGS=`pkg-config --cflags gtkmm-2.4` $(GENERAL) -MMD -MP
 LDFLAGS=`pkg-config --libs gtkmm-2.4` $(GENERAL)
 
