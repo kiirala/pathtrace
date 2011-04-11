@@ -221,20 +221,56 @@ void stop_work() {
   delete wh;
 }
 
+static void print_help(const char* name) {
+  fprintf(stderr,
+	  "Usage: %s [-t COUNT] [-s WIDTHxHEIGHT]\n"
+	  "    -t: set thread count\n"
+	  "    -s: set screen size (e.g. 640x480)",
+	  name);
+}
+
 int main(int argc, char **argv) {
   Gtk::Main kit(argc, argv);
   int width = 640;
   int height = 480;
 
+  int threads = 1;
+  int opt;
+  while ((opt = getopt(argc, argv, "t:s:")) != -1) {
+    switch (opt) {
+    case 's': {
+      int r = sscanf(optarg, "%dx%d", &width, &height);
+      if (r == 2)
+        break;
+      print_help(argv[0]);
+      exit(EXIT_FAILURE);      
+    }
+    case 't': {
+      int r = sscanf(optarg, "%d", &threads);
+      if (r == 1)
+        break;
+      print_help(argv[0]);
+      exit(EXIT_FAILURE);
+    }
+    case 'h':
+    case '?':
+      print_help(argv[0]);
+      exit(EXIT_SUCCESS);
+    default:
+      print_help(argv[0]);
+      exit(EXIT_FAILURE);
+    }
+  }
+
   Scene s;
   s.add(Object(Sphere(Vector3(1.0, 1.6, 0.0), 0.5),
-	       Glass(Colour(1.00, 1.00, 1.00), 1.5, 0.1)));
+	       Glass(Colour(0.9, 0.99, 0.99), 1.5, 0.0)));
   s.add(Object(Difference(Sphere(Vector3(-1.1, 2.8, 0.0), 0.5),
 			  Sphere(Vector3(-0.8, 2.6, 0.1), 0.5)),
 	       Material(Colour(0.8, 0.8, 0.8), 0.01)));
   for (int i = 0 ; i < 3 ; ++i) {
     s.add(Object(Sphere(Vector3(-1.0 + i * 0.7, 1.4 + i * 0.5, -0.25), 0.25),
-		 Material(Colour(0.96, 0.65, 0.55), pow(0.2, 2/*3 - i*/))));
+		 Material(Colour(0.96, 0.65, 0.55), 0.04)));
   }
 
   s.add(Object(Plane(Vector3(0.0, 3.5, -0.5), Vector3(0, 0, 1)),
@@ -261,7 +297,7 @@ int main(int argc, char **argv) {
 
   Glib::RefPtr<Gdk::Pixbuf> buf = 
     Gdk::Pixbuf::create(Gdk::COLORSPACE_RGB, false, 8, width, height);
-  wh = new Workhandler(tr, buf);
+  wh = new Workhandler(tr, buf, threads);
   atexit(stop_work);
   ImageWindow window(buf, wh);
   

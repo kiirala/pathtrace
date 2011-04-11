@@ -27,7 +27,7 @@ public:
     : colour(colour), emission(emission), roughness(roughness)
   { }
 
-  virtual Vector3 bounce(Ray const &ray, Vector3 const &normal) const;
+  virtual Ray bounce(Ray const &ray, Vector3 const &normal, double const distance) const;
   virtual Material* clone() const;
 };
 
@@ -37,10 +37,10 @@ private:
   double reflection;
 
 public:
-  Glass(Colour col, double ior, double reflection)
+  Glass(Colour const &col, double ior, double reflection)
     : Material(col), ior(ior), reflection(reflection)
   { }
-  virtual Vector3 bounce(Ray const &ray, Vector3 const &normal) const;
+  virtual Ray bounce(Ray const &ray, Vector3 const &normal, double const distance) const;
   virtual Material* clone() const;
 };
 

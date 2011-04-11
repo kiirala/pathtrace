@@ -4,7 +4,7 @@
 #include "material.h"
 #include "linalg.h"
 
-Vector3 Material::bounce(Ray const &ray, Vector3 const &normal) const {
+Ray Material::bounce(Ray const &ray, Vector3 const &normal, double const distance) const {
   Vector3 tangent = normal.generate_normal();
   Vector3 bitangent = normal.cross(tangent);
   Vector3 g = Vector3::gaussian(0, roughness);
@@ -17,34 +17,20 @@ Vector3 Material::bounce(Ray const &ray, Vector3 const &normal) const {
   double theta = fabs(ray.direction.dot(my_n));
   Vector3 refl = ray.direction + my_n * theta * 2.0;
   refl.normalize();
-  return refl;
 
-  /*
-  double theta = fabs(ray.direction.dot(normal));
-  Vector3 refl = ray.direction + normal * theta * 2.0;
-  refl.normalize();
-  Vector3 r_norm1 = refl.generate_normal();
-  Vector3 r_norm2 = refl.cross(r_norm1);
-
-  Vector3 dir;
-  do {
-    Vector3 dir_refl = Vector3::gaussian(0, roughness);
-    dir = r_norm1 * dir_refl.y + r_norm2 * dir_refl.x + refl * dir_refl.z;
-    //dir.normalize();
-  } while (dir.dot(normal) < 0.0);
-  //if (dir.dot(normal) < 0.0)
-  //  dir = -dir;
-  return dir;
-  */
+  Ray ret(ray, distance, refl);
+  return ret;
 }
 
-Vector3 Glass::bounce(Ray const &ray, Vector3 const &normal) const {
+Ray Glass::bounce(Ray const &ray, Vector3 const &normal, double const distance) const {
   double theta1 = fabs(ray.direction.dot(normal));
   double internal_index = ior;
-  double external_index = 1.0;
+  double external_index = ray.ior;
+  Colour internal_opacity(Vector3(1.0, 1.0, 1.0) / colour - Vector3(1.0, 1.0, 1.0));
   if (theta1 < 0.0) {
     internal_index = 1.0;
     external_index = ior;
+    internal_opacity.set(0.0, 0.0, 0.0);
   }
 
   double eta = external_index / internal_index;
@@ -58,18 +44,20 @@ Vector3 Glass::bounce(Ray const &ray, Vector3 const &normal) const {
   if ((double)random() / RAND_MAX < reflectance + reflection) {
     Vector3 vec = ray.direction + normal * theta1 * 2.0;
     vec.normalize();
-    return vec;
+    Ray ret(ray, distance, vec);
+    return ret;
   }
   else {
     Vector3 vec = (ray.direction + normal * theta1) * eta + normal * (-theta2);
     vec.normalize();
-    return vec;
+    Ray ret(ray, distance, vec, internal_index, internal_opacity);
+    return ret;
   }
 }
 
 Material* Material::clone() const {
-  return new Material(colour, emission, roughness);
+  return new Material(*this);
 }
 Material* Glass::clone() const {
-  return new Glass(colour, ior, reflection);
+  return new Glass(*this);
 }

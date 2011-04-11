@@ -88,6 +88,11 @@ struct Vector3 {
     return res;
   }
 
+  const Vector3 operator/ (Vector3 const other) const {
+    Vector3 res(x / other.x, y / other.y, z / other.z);
+    return res;
+  }
+
   Vector3 operator/= (double const f) {
     this->x /= f;
     this->y /= f;
@@ -180,6 +185,10 @@ public:
     : Vector3(r, g, b)
   { }
 
+  Colour(Vector3 const &v)
+    : Vector3(v)
+  { }
+
   double r() const { return x; }
   double g() const { return y; }
   double b() const { return z; }
@@ -198,9 +207,27 @@ public:
 struct Ray {
   Vector3 origin;
   Vector3 direction;
+  double ior;
+  Colour opacity;
 
   Ray(Vector3 const &origin, Vector3 const &direction)
-    : origin(origin), direction(direction)
+    : origin(origin), direction(direction), ior(1.0), opacity()
+  { }
+
+  Ray(Vector3 const &origin, Vector3 const &direction,
+      double const ior, Colour const &opacity)
+    : origin(origin), direction(direction), ior(ior), opacity(opacity)
+  { }
+
+  Ray(Ray const &other, double const distance, Vector3 const &direction)
+    : origin(other.origin + other.direction * distance), direction(direction),
+      ior(other.ior), opacity(other.opacity)
+  { }
+
+  Ray(Ray const &other, double const distance, Vector3 const &direction,
+      double const ior, Colour const &opacity)
+    : origin(other.origin + other.direction * distance), direction(direction),
+      ior(ior), opacity(opacity)
   { }
 };
 
