@@ -1,0 +1,36 @@
+3D Renderer Using Path Tracing
+==============================
+
+Path tracing is a randomized method for creating high-quality 3D-renderings,
+though also a very slow one.
+
+Many physical phenomena – such as caustics, interreflection and focal blur –
+that are often hard to simulate are rather straightforward to implement with
+path tracing. On the other hand, due to the randomization, the naive path
+tracing method can require thousands of rays per image pixel to converge
+to a high-quality image.
+
+My implementation of path tracing also uses high dynamic range rendering,
+gamma correction and exposure control. The example scene contains a rather
+limited dynamic range, though, and doesn't show these features too well.
+Internally the program uses a floating point pixel format and converts them
+to sRGB upon export.
+
+The program was originally written in Python, but since it proved to be too
+slow for such a computationally intensive method, I rewrote the program in
+C++. The GUI is built with gtkmm.
+
+To compile:
+===========
+Run "make". This produces two files:
+gui   the main program
+test  runs tests on internal methods (currently tests the random generator)
+
+gui can take three different parameters:
+-t NUMBER        number of threads to use (e.g. -t 4)
+-s WIDTHxHEIGHT  size of rendered image (e.g. -s 1024x768)
+-h               show the help text
+
+Requires:
+=========
+gtkmm with development files (package libgtkmm-2.4-dev or somesuch)
