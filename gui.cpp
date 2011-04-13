@@ -115,7 +115,9 @@ public:
 
   bool on_quit() {
     running = false;
+    gdk_threads_leave();
     workhandler->stop();
+    gdk_threads_enter();
     return false;
   }
 
@@ -129,6 +131,7 @@ public:
   }
 
   void on_frame() {
+    gdk_threads_enter();
     image_w.queue_draw();
     steps++;
     static char label[64];
@@ -136,6 +139,7 @@ public:
     if (!paused) total_time += time(0) - start_time;
     snprintf(label, 64, "%d steps\n%ld seconds", steps, total_time);
     steps_l.set_text(label);
+    gdk_threads_leave();
   }
 
   void on_pause() {
@@ -211,7 +215,9 @@ public:
 
   void run() {
     while (running) {
+      gdk_threads_enter();
       Gtk::Main::iteration();
+      gdk_threads_leave();
     }
   }
 };
@@ -230,6 +236,8 @@ static void print_help(const char* name) {
 }
 
 int main(int argc, char **argv) {
+  g_thread_init(0);
+  gdk_threads_init();
   Gtk::Main kit(argc, argv);
   int width = 640;
   int height = 480;
@@ -264,7 +272,7 @@ int main(int argc, char **argv) {
 
   Scene s;
   s.add(Object(Sphere(Vector3(1.0, 1.6, 0.0), 0.5),
-	       Glass(Colour(0.9, 0.99, 0.99), 1.5, 0.0)));
+	       Glass(Colour(0.9, .99, .99), 1.5, 0.3)));
   s.add(Object(Difference(Sphere(Vector3(-1.1, 2.8, 0.0), 0.5),
 			  Sphere(Vector3(-0.8, 2.6, 0.1), 0.5)),
 	       Material(Colour(0.8, 0.8, 0.8), 0.01)));
@@ -276,7 +284,7 @@ int main(int argc, char **argv) {
   s.add(Object(Plane(Vector3(0.0, 3.5, -0.5), Vector3(0, 0, 1)),
 	       Material(Colour(0.9, 0.9, 0.9))));
   s.add(Object(Plane(Vector3(0.0, 4.5, 0.0), Vector3(0, -1, 0)),
-	       Material(Colour(0.9, 0.9, 0.9), 0.01)));
+	       Material(Colour(0.9, 0.9, 0.9)))); //takaseinä
   s.add(Object(Plane(Vector3(-1.9, 3.5, 0.0), Vector3(1, 0, 0)),
 	       Material(Colour(0.9, 0.5, 0.5))));
   s.add(Object(Plane(Vector3(1.9, 3.5, 0.0), Vector3(-1, 0, 0)),
