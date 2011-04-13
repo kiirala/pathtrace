@@ -105,7 +105,7 @@ void Tracer::traceImage(Image &img) {
       */
       Ray ray = camera.get_ray((x + dx) / img.width,
 			       (y + dy) / img.height);
-      Colour col = trace(ray, 0, 6);
+      Colour col = trace(ray, 0, 8);
       img(x, y) = col;
     }
   }

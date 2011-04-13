@@ -28,7 +28,7 @@ Sphere* Sphere::clone() const {
 
 Hit Plane::intersect(Ray const &ray) const {
   double plane_angle = ray.direction.dot(normal);
-  if (fabs(plane_angle) < 1e-4)
+  if (plane_angle >= 0)
     return Hit();
   Vector3 start_diff = point - ray.origin;
   double dist = normal.dot(start_diff) / plane_angle;
@@ -42,25 +42,27 @@ Plane* Plane::clone() const {
 Hit Difference::intersect(Ray const &ray) const {
   Hit base_d = base->intersect(ray);
   Hit cut_d = cut->intersect(ray);
-  if (base_d.is_hit() && !cut_d.is_hit()) {
-    return base_d;
-  }
-  else if (base_d.is_hit()) {
-    if (base_d.distance > cut_d.distance) {
-      Ray inray(Vector3(ray.origin + ray.direction * base_d.distance),
-		ray.direction);
-      Hit base_d2 = base->intersect(inray);
-      Hit cut_d2 = cut->intersect(inray);
-      if (base_d2.distance > cut_d2.distance)
-	return Hit(ray, base_d.distance + cut_d2.distance, -cut_d2.normal);
-      else
-	return Hit();
-    }
-    else {
+  if (base_d.is_hit()) {
+    if (!cut_d.is_hit()) {
       return base_d;
     }
+    else {
+      if (base_d.distance > cut_d.distance) {
+	Ray inray(ray.origin + ray.direction * base_d.distance,
+		  ray.direction);
+	Hit base_d2 = base->intersect(inray);
+	Hit cut_d2 = cut->intersect(inray);
+	if (!cut_d2.is_hit())
+	  return base_d;
+	if (base_d2.distance > cut_d2.distance)
+	  return Hit(ray, base_d.distance + cut_d2.distance, -cut_d2.normal);
+      }
+      else {
+	return base_d;
+      }
+    }
   }
-  else return Hit();
+  return Hit();
 }
 
 Difference* Difference::clone() const {
