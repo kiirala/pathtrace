@@ -10,7 +10,7 @@ Ray Material::bounce(Ray const &ray, Vector3 const &normal, double const distanc
   Vector3 g = Vector3::gaussian(0, roughness);
   if (g.z < 0) g = -g;
   Vector3 my_n = tangent * g.x + bitangent * g.y + normal * g.z;
-  if (my_n.dot(ray.direction) > 0) {
+  if (ray.direction.dot(my_n) > 0) {
     my_n = tangent * (-g.x) + bitangent * (-g.y) + normal * g.z;    
   }
 
@@ -55,7 +55,7 @@ Ray Glass::bounce(Ray const &ray, Vector3 const &normal, double const distance) 
   }
   else {
     Vector3 vec;
-    if (theta1 < 0)
+    if (theta1 > 0)
       vec = ray.direction * eta + normal * (eta * theta1 - theta2);
     else
       vec = ray.direction * eta + normal * (eta * theta1 + theta2);

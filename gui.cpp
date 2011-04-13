@@ -272,14 +272,16 @@ int main(int argc, char **argv) {
 
   Scene s;
   s.add(Object(Sphere(Vector3(1.0, 1.6, 0.0), 0.5),
-	       Glass(Colour(0.9, .99, .99), 1.5, 0.3)));
+	       Glass(Colour(1, 1, 1), 1.5, 0.05)));
   s.add(Object(Difference(Sphere(Vector3(-1.1, 2.8, 0.0), 0.5),
 			  Sphere(Vector3(-0.8, 2.6, 0.1), 0.5)),
 	       Material(Colour(0.8, 0.8, 0.8), 0.01)));
-  for (int i = 0 ; i < 3 ; ++i) {
-    s.add(Object(Sphere(Vector3(-1.0 + i * 0.7, 1.4 + i * 0.5, -0.25), 0.25),
+  for (int i = 0 ; i < 4 ; ++i) {
+    s.add(Object(Sphere(Vector3(-1.1 + i * 0.7, 1.4 + i * 0.5, -0.25), 0.25),
 		 Material(Colour(0.96, 0.65, 0.55), 0.04)));
   }
+  s.add(Object(Sphere(Vector3(0.4, 0.6, -0.40), 0.10),
+	       Material(Colour(0.96, 0.65, 0.55), 0.04)));
 
   s.add(Object(Plane(Vector3(0.0, 3.5, -0.5), Vector3(0, 0, 1)),
 	       Material(Colour(0.9, 0.9, 0.9))));
