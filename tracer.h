@@ -3,6 +3,7 @@
 
 #include <gtkmm.h>
 #include <assert.h>
+#include <math.h>
 
 #include "linalg.h"
 #include "material.h"
@@ -85,6 +86,11 @@ public:
 class Scene {
 public:
   std::vector<Object> objects;
+  double mean_free_path;
+
+  Scene()
+    : mean_free_path(INFINITY)
+  { }
 
   void add(Object const &o) {
     objects.push_back(o);

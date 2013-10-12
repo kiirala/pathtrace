@@ -11,7 +11,7 @@ Hit Sphere::intersect(Ray const &ray) const {
   double discr = b * b - 4 * a * c;
   if (discr > 0.0) {
     double distance;
-    if ((-b - sqrt(discr)) / (2 * a) < 1e-8)
+    if ((-b - sqrt(discr)) / (2 * a) < 1e-10)
       distance = (-b + sqrt(discr)) / (2 * a);
     else
       distance = (-b - sqrt(discr)) / (2 * a);
@@ -40,24 +40,26 @@ Plane* Plane::clone() const {
 }
 
 Hit Difference::intersect(Ray const &ray) const {
+  // TODO: Translucent shapes won't work.
   Hit base_d = base->intersect(ray);
-  Hit cut_d = cut->intersect(ray);
   if (base_d.is_hit()) {
+    Hit cut_d = cut->intersect(ray);
     if (!cut_d.is_hit()) {
       return base_d;
     }
     else {
-      if (base_d.distance > cut_d.distance) {
-	Ray inray(ray.origin + ray.direction * base_d.distance,
-		  ray.direction);
-	Hit base_d2 = base->intersect(inray);
-	Hit cut_d2 = cut->intersect(inray);
+      Ray inray(ray.origin + ray.direction * base_d.distance,
+		ray.direction);
+      Hit base_d2 = base->intersect(inray);
+      Hit cut_d2 = cut->intersect(inray);
+      if (!base_d2.is_hit()) {
+	return Hit();
+      } else if (base_d.distance >= cut_d.distance) {
 	if (!cut_d2.is_hit())
 	  return base_d;
-	if (base_d2.distance > cut_d2.distance)
+	if (base_d2.distance >= cut_d2.distance)
 	  return Hit(ray, base_d.distance + cut_d2.distance, -cut_d2.normal);
-      }
-      else {
+      } else {
 	return base_d;
       }
     }

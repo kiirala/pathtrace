@@ -72,7 +72,28 @@ void test_gaussian() {
   len.print();
 }
 
+void test_fresnel() {
+  double external_index = 1.5;
+  double internal_index = 1.0;
+  double eta = external_index / internal_index;
+
+  for (double angle = -M_PI / 2; angle <= M_PI / 2; angle += M_PI / 16) {
+    double theta1 = cos(angle);
+    // Snell's Law
+    double theta2sq = 1.0 - eta * eta * (1.0 - theta1 * theta1);
+    double theta2 = sqrt(theta2sq);
+    // Fresnell Equations
+    double rs = (external_index * fabs(theta1) - internal_index * theta2) /
+      (external_index * fabs(theta1) + internal_index * theta2);
+    double rp = (internal_index * fabs(theta1) - external_index * theta2) /
+      (internal_index * fabs(theta1) + external_index * theta2);
+    double reflectance = (rs * rs + rp * rp) / 2;
+    printf("%5.2f -> %6.4f\n", angle, reflectance);
+  }
+}
+
 int main() {
   test_gaussian();
+  test_fresnel();
   return 0;
 }

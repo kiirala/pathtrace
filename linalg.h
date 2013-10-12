@@ -155,10 +155,21 @@ struct Vector3 {
     Vector3 ret(sin(rot1) * cos(rot2), sin(rot1) * sin(rot2), cos(rot1));
     return ret;
   }
+
+  const Vector3 static uniform_random() {
+    double rot1 = acos((double)random() / RAND_MAX * 2 - 1);
+    double rot2 = (double)random() / RAND_MAX * 2 * M_PI;
+    Vector3 ret(sin(rot1) * cos(rot2), sin(rot1) * sin(rot2), cos(rot1));
+    return ret;
+  }
 };
 
 struct Colour : public Vector3 {
 private:
+  static double expose(double const val, double const exposure) {
+    return 1.0 - exp(val * -exposure);
+  }
+
   static double to_srgb(double val) {
     double a = 0.055;
     double gamma = 2.4;
@@ -193,6 +204,11 @@ public:
   double g() const { return y; }
   double b() const { return z; }
 
+  const Colour expose(double exposure) const {
+    Colour ret(expose(x, exposure), expose(y, exposure), expose(z, exposure));
+    return ret;
+  }
+
   const Colour to_srgb() const {
     Colour ret(to_srgb(x), to_srgb(y), to_srgb(z));
     return ret;
@@ -209,26 +225,34 @@ struct Ray {
   Vector3 direction;
   double ior;
   Colour opacity;
+  bool valid;
 
   Ray(Vector3 const &origin, Vector3 const &direction)
-    : origin(origin), direction(direction), ior(1.0), opacity()
+    : origin(origin), direction(direction), ior(1.0), opacity(), valid(true)
   { }
 
   Ray(Vector3 const &origin, Vector3 const &direction,
       double const ior, Colour const &opacity)
-    : origin(origin), direction(direction), ior(ior), opacity(opacity)
+    : origin(origin), direction(direction), ior(ior), opacity(opacity),
+      valid(true)
   { }
 
   Ray(Ray const &other, double const distance, Vector3 const &direction)
     : origin(other.origin + other.direction * distance), direction(direction),
-      ior(other.ior), opacity(other.opacity)
+      ior(other.ior), opacity(other.opacity), valid(other.valid)
   { }
 
   Ray(Ray const &other, double const distance, Vector3 const &direction,
       double const ior, Colour const &opacity)
     : origin(other.origin + other.direction * distance), direction(direction),
-      ior(ior), opacity(opacity)
+      ior(ior), opacity(opacity), valid(other.valid)
   { }
+
+  static Ray InvalidRay() {
+    Ray ret(Vector3(0, 0, 0), Vector3(0, 0, 0));
+    ret.valid = false;
+    return ret;
+  }
 };
 
 struct Vertex {

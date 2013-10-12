@@ -236,7 +236,7 @@ static void print_help(const char* name) {
 }
 
 int main(int argc, char **argv) {
-  g_thread_init(0);
+  //g_thread_init(0);
   gdk_threads_init();
   Gtk::Main kit(argc, argv);
   int width = 640;
@@ -272,10 +272,10 @@ int main(int argc, char **argv) {
 
   Scene s;
   s.add(Object(Sphere(Vector3(1.0, 1.6, 0.0), 0.5),
-	       Glass(Colour(1, 1, 1), 1.5, 0.05)));
+	       Glass(Colour(0.5, 0.9, 0.99), 1.52, 0.01)));
   s.add(Object(Difference(Sphere(Vector3(-1.1, 2.8, 0.0), 0.5),
 			  Sphere(Vector3(-0.8, 2.6, 0.1), 0.5)),
-	       Material(Colour(0.8, 0.8, 0.8), 0.01)));
+	       Material(Colour(0.8, 0.8, 0.8), Colour(10, 10, 1), 0.01)));
   for (int i = 0 ; i < 4 ; ++i) {
     s.add(Object(Sphere(Vector3(-1.1 + i * 0.7, 1.4 + i * 0.5, -0.25), 0.25),
 		 Material(Colour(0.96, 0.65, 0.55), 0.04)));
@@ -293,9 +293,11 @@ int main(int argc, char **argv) {
 	       Material(Colour(0.5, 0.5, 0.9))));
   s.add(Object(Plane(Vector3(0.0, 0.0, 2.5), Vector3(0, 0, -1)),
 	       Material(Colour(0.0, 0.0, 0.0),
-			Colour(12.6, 11.6, 10.2))));
+			Colour(126, 116, 102) * 0.25)));
   s.add(Object(Plane(Vector3(0.0, -2.5, 0.0), Vector3(0, 1, 0)),
 	       Material(Colour(0.9, 0.9, 0.9))));
+
+  s.mean_free_path = 1.0;
 
   Camera cam(Vector3(0.0, -0.5, 0.0),
 	     Vector3(-1.3, 1.0, 1.0),

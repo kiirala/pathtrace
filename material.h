@@ -10,21 +10,22 @@ public:
   Colour colour;
   Colour emission;
   double roughness;
+  bool opaque;
 
   Material(Colour colour)
-    : colour(colour), emission(), roughness(default_roughness)
+    : colour(colour), emission(), roughness(default_roughness), opaque(true)
   { }
 
   Material(Colour colour, Colour emission)
-    : colour(colour), emission(emission), roughness(default_roughness)
+    : colour(colour), emission(emission), roughness(default_roughness), opaque(true)
   { }
 
   Material(Colour colour, double roughness)
-    : colour(colour), emission(), roughness(roughness)
+    : colour(colour), emission(), roughness(roughness), opaque(true)
   { }
 
   Material(Colour colour, Colour emission, double roughness)
-    : colour(colour), emission(emission), roughness(roughness)
+    : colour(colour), emission(emission), roughness(roughness), opaque(true)
   { }
 
   virtual Ray bounce(Ray const &ray, Vector3 const &normal, double const distance) const;
@@ -34,12 +35,13 @@ public:
 class Glass : public Material {
 private:
   double ior;
-  double reflection;
 
 public:
-  Glass(Colour const &col, double ior, double reflection)
-    : Material(col), ior(ior), reflection(reflection)
-  { }
+  Glass(Colour const &col, double ior, double roughness)
+    : Material(col, roughness), ior(ior)
+  {
+    this->opaque = false;
+  }
   virtual Ray bounce(Ray const &ray, Vector3 const &normal, double const distance) const;
   virtual Material* clone() const;
 };

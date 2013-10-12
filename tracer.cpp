@@ -18,9 +18,8 @@ void Image::blit_to(Glib::RefPtr<Gdk::Pixbuf> &pb, double exposure) {
     unsigned int row = y * pb->get_rowstride();
     for (unsigned int x = 0 ; x < width ; ++x) {
       Colour col = data[y * width + x];
-      col /= exposure * paints_started;
-      Colour col2 = col.to_srgb();
-      col = col2.to_byte();
+      col /= paints_started;
+      col = col.expose(exposure).to_srgb().to_byte();
       pixels[row + x * 3] = col.r();
       pixels[row + x * 3 + 1] = col.g();
       pixels[row + x * 3 + 2] = col.b();
@@ -72,15 +71,23 @@ Colour Tracer::trace(Ray &ray, int bounces, int maxbounces) {
   }
 
   Colour ret;
-  if (!hitobj->material->colour.is_zero()) {
-    Ray newray = hitobj->material->bounce(ray, hitdist.normal, hitdist.distance);
+  double free_distance = -scene.mean_free_path * log(((double)random() + 1) / RAND_MAX);
+  if (free_distance < hitdist.distance) {
+    Ray newray(ray, free_distance, Vector3::uniform_random());
     ret = trace(newray, bounces + 1, maxbounces);
-    if (ray.opacity.is_zero() && newray.opacity.is_zero())
-      ret *= hitobj->material->colour;
+  } else {
+    if (!hitobj->material->colour.is_zero()) {
+      Ray newray = hitobj->material->bounce(ray, hitdist.normal, hitdist.distance);
+      if (newray.valid) ret = trace(newray, bounces + 1, maxbounces);
+      if (hitobj->material->opaque)
+	ret *= hitobj->material->colour;
+    }
+    ret += hitobj->material->emission / (M_PI * M_PI);
+    if (!hitobj->material->opaque) {
+      double const d = hitdist.distance;
+      ret *= Colour(exp(-ray.opacity.r() * d), exp(-ray.opacity.g() * d), exp(-ray.opacity.b() * d));
+    }
   }
-  ret += hitobj->material->emission / (M_PI * M_PI);
-  double const d = hitdist.distance;
-  ret *= Colour(exp(-ray.opacity.r() * d), exp(-ray.opacity.g() * d), exp(-ray.opacity.b() * d));
   return ret;
 }
 
