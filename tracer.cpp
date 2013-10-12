@@ -82,6 +82,7 @@ Colour Tracer::trace(Ray &ray, int bounces, int maxbounces) {
       if (hitobj->material->opaque)
 	ret *= hitobj->material->colour;
     }
+    ret *= ray.filter;
     ret += hitobj->material->emission / (M_PI * M_PI);
     if (!hitobj->material->opaque) {
       double const d = hitdist.distance;

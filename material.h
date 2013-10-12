@@ -33,15 +33,26 @@ public:
 };
 
 class Glass : public Material {
-private:
+public:
   double ior;
 
-public:
   Glass(Colour const &col, double ior, double roughness)
     : Material(col, roughness), ior(ior)
   {
     this->opaque = false;
   }
+  virtual Ray bounce(Ray const &ray, Vector3 const &normal, double const distance) const;
+  virtual Material* clone() const;
+};
+
+class Film : public Glass {
+public:
+  double thickness;
+
+  Film(double thickness, double ior, double roughness)
+    : Glass(Colour(1.0, 1.0, 1.0), ior, roughness), thickness(thickness)
+  { }
+
   virtual Ray bounce(Ray const &ray, Vector3 const &normal, double const distance) const;
   virtual Material* clone() const;
 };

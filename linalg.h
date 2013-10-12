@@ -225,27 +225,30 @@ struct Ray {
   Vector3 direction;
   double ior;
   Colour opacity;
+  Colour filter;
   bool valid;
 
   Ray(Vector3 const &origin, Vector3 const &direction)
-    : origin(origin), direction(direction), ior(1.0), opacity(), valid(true)
+    : origin(origin), direction(direction), ior(1.0), opacity(),
+      filter(1.0, 1.0, 1.0), valid(true)
   { }
 
   Ray(Vector3 const &origin, Vector3 const &direction,
       double const ior, Colour const &opacity)
     : origin(origin), direction(direction), ior(ior), opacity(opacity),
-      valid(true)
+      filter(1.0, 1.0, 1.0), valid(true)
   { }
 
   Ray(Ray const &other, double const distance, Vector3 const &direction)
     : origin(other.origin + other.direction * distance), direction(direction),
-      ior(other.ior), opacity(other.opacity), valid(other.valid)
+      ior(other.ior), opacity(other.opacity), filter(other.filter),
+      valid(other.valid)
   { }
 
   Ray(Ray const &other, double const distance, Vector3 const &direction,
       double const ior, Colour const &opacity)
     : origin(other.origin + other.direction * distance), direction(direction),
-      ior(ior), opacity(opacity), valid(other.valid)
+      ior(ior), opacity(opacity), filter(other.filter), valid(other.valid)
   { }
 
   static Ray InvalidRay() {

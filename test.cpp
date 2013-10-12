@@ -73,8 +73,8 @@ void test_gaussian() {
 }
 
 void test_fresnel() {
-  double external_index = 1.5;
-  double internal_index = 1.0;
+  double external_index = 1.0;
+  double internal_index = 1.33;
   double eta = external_index / internal_index;
 
   for (double angle = -M_PI / 2; angle <= M_PI / 2; angle += M_PI / 16) {
